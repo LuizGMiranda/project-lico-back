@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model lineup {
+  id                           Int     @id @default(autoincrement())
+  match                        Int?
+  player                       Int?
+  team                         Int?
+  status                       String? @db.VarChar(100)
+  match_lineup_matchTomatch    match?  @relation("lineup_matchTomatch", fields: [match], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lineup_match_FK")
+  player_lineup_playerToplayer player? @relation("lineup_playerToplayer", fields: [player], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lineup_player_FK")
+
+  @@index([match], map: "lineup_match_FK")
+  @@index([player], map: "lineup_player_FK")
+}
+
+model match {
+  id                         Int       @id @default(autoincrement())
+  location                   String?   @db.VarChar(100)
+  result                     String?   @db.VarChar(100)
+  date                       DateTime? @db.Date
+  teamHome                   Int?
+  teamAway                   Int?
+  lineup_lineup_matchTomatch lineup[]  @relation("lineup_matchTomatch")
+  team_match_teamHomeToteam  team?     @relation("match_teamHomeToteam", fields: [teamHome], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "match_team_FK")
+  team_match_teamAwayToteam  team?     @relation("match_teamAwayToteam", fields: [teamAway], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "match_team_FK_1")
+
+  @@index([teamHome], map: "match_team_FK")
+  @@index([teamAway], map: "match_team_FK_1")
+}
+
+model player {
+  id                           Int       @id @default(autoincrement())
+  name                         String    @db.VarChar(100)
+  position                     String?   @db.VarChar(100)
+  birthOf                      DateTime? @db.Date
+  nationality                  String?   @db.VarChar(100)
+  height                       Int?   @db.Int
+  weight                       Int?   @db.Int
+  dominantFoot                 String?   @db.VarChar(100)
+  lineup_lineup_playerToplayer lineup[]  @relation("lineup_playerToplayer")
+}
+
+model team {
+  id                         Int     @id @default(autoincrement())
+  name                       String  @db.VarChar(100)
+  coach                      String? @db.VarChar(100)
+  match_match_teamHomeToteam match[] @relation("match_teamHomeToteam")
+  match_match_teamAwayToteam match[] @relation("match_teamAwayToteam")
+}
